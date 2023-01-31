@@ -5,13 +5,12 @@
 {% endblock  %}
 {% block content %}
   <div class="container py-4">
-    <h1>Автор: {{ post.author.get_full_name }} </h1>
-    <h3>Всего постов автора:  <span >{{ post.author.posts.count }}</span> </h3>
-    <a href="{% url 'posts:profile' post.author  %}">Все посты пользователя</a>
+    <h3> </h3>
+    <a href="{% url 'posts:profile' post.author  %}">Все посты автора</a>
     <ul>
       <br>
       <li>
-        Автор: {{ post.author.get_full_name }}
+        Автор: {{ post.author.get_full_name }} (всего постов <span >{{ post.author.posts.count }}</span>)
       </li>
       <li>
         Дата публикации: {{ post.pub_date|date:"d E Y" }}

@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+from http import HTTPStatus
 
 from django import forms
 from django.conf import settings
@@ -9,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Group, Post
+from ..models import Group, Post, Follow
 
 User = get_user_model()
 
@@ -22,6 +23,8 @@ class ViewsTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='StasBasov')
+        cls.second_user = User.objects.create_user(username='Mikhail')
+        cls.third_user = User.objects.create_user(username='author2')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='test-slug',
@@ -59,6 +62,11 @@ class ViewsTest(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        self.another_authorized_client = Client()
+        self.third_autorized_client = Client()
+        self.authorized_client.force_login(self.user)
+        self.another_authorized_client.force_login(self.second_user)
+        self.third_autorized_client.force_login(self.third_user)
         cache.clear()
 
     def test_pages_uses_correct_template(self):
@@ -191,3 +199,41 @@ class ViewsTest(TestCase):
         cache.clear()
         content3 = self.client.get(reverse_addr).content
         self.assertNotEqual(content1, content3)
+
+    def test_follow(self):
+        """Проверка работы подписки на автора"""
+        follows_count = Follow.objects.count()
+        self.another_authorized_client.get(
+            reverse('posts:profile_follow', kwargs={
+                'username': self.user.username
+            })
+        )
+        self.assertEqual(Follow.objects.count(), follows_count + 1)
+
+    def test_correct_subscribtion(self):
+        """Проверка появления нового поста в ленте подписчика"""
+        Follow.objects.create(user=self.user, author=self.second_user)
+        Post.objects.create(
+            author=self.second_user,
+            group=self.group,
+            text='Тест подписки'
+        )
+        response = self.authorized_client.get(reverse('posts:follow_index'))
+        post_obj = response.context['page_obj'][0]
+        self.assertEqual(post_obj.author, self.second_user)
+        self.assertEqual(post_obj.group, self.group)
+        self.assertEqual(post_obj.text, 'Тест подписки')
+
+    def test_correct_subscribtion_not_subscriber(self):
+        Follow.objects.create(user=self.user, author=self.second_user)
+        Follow.objects.create(user=self.third_user, author=self.user)
+        Post.objects.create(
+            author=self.second_user,
+            group=self.group,
+            text='Тест подписки'
+        )
+        response = self.third_autorized_client.get(reverse(
+            'posts:follow_index'))
+        post_obj = response.context['page_obj'][0]
+        self.assertNotEqual(post_obj.author, self.second_user)
+        self.assertNotEqual(post_obj.text, 'Тест подписки')

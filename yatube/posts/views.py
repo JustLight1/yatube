@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
 
 from .forms import CommentForm, PostForm
-from .models import Group, Post
+from .models import Group, Post, Follow
 from .utils import paginator
 
 User = get_user_model()
@@ -38,9 +38,11 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     posts = author.posts.select_related('group')
     page_obj = paginator(posts, request)
+    following = request.user.is_authenticated and author.following.exists()
     context = {
         'author': author,
         'page_obj': page_obj,
+        'following': following,
     }
     return render(request, 'posts/profile.html', context)
 
@@ -103,12 +105,32 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     """Функция вывода постов авторов, на которых подписан пользователь."""
-    post = request.user
+    posts = Post.objects.filter(author__following__user=request.user)
+    page_obj = paginator(posts, request)
     context = {
-        'post':post
+        'page_obj': page_obj,
     }
     return render(request, 'posts/follow.html', context)
 
 
+@login_required
+def profile_follow(request, username):
+    # Подписаться на автора
+    user = request.user
+    author = get_object_or_404(User, username=username)
+    if request.user != author:
+        Follow.objects.get_or_create(
+            user=user,
+            author=author
+        )
+    return redirect('posts:profile', username)
 
 
+@login_required
+def profile_unfollow(request, username):
+    # Дизлайк, отписка
+    Follow.objects.filter(
+        user=request.user,
+        author=get_object_or_404(User, username=username)
+    ).delete()
+    return redirect('posts:profile', username)
