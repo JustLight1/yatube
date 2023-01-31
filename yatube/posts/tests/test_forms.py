@@ -78,11 +78,11 @@ class PostFormTests(TestCase):
         )
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(Post.objects.filter(
-                text=self.form_data['text'],
-                group=self.form_data['group'],
-                image='posts/small.gif',
-                author=self.post.author
-        ).exists())
+                        text=self.form_data['text'],
+                        group=self.form_data['group'],
+                        image='posts/small.gif',
+                        author=self.post.author
+                        ).exists())
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_post_edit(self):

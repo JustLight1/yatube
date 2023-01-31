@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-from http import HTTPStatus
 
 from django import forms
 from django.conf import settings
@@ -10,7 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Group, Post, Follow
+from ..models import Follow, Group, Post
 
 User = get_user_model()
 
@@ -225,6 +224,7 @@ class ViewsTest(TestCase):
         self.assertEqual(post_obj.text, 'Тест подписки')
 
     def test_correct_subscribtion_not_subscriber(self):
+        """Проверка подписки."""
         Follow.objects.create(user=self.user, author=self.second_user)
         Follow.objects.create(user=self.third_user, author=self.user)
         Post.objects.create(
