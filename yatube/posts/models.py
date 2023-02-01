@@ -103,10 +103,7 @@ class Follow(models.Model):
                 name='unique_follower_following'
             ),
             models.CheckConstraint(
-                check=models.Q('author'),
+                check=models.Q("author"),
                 name='check_not_self_follow'
             ),
         ]
-
-    def __str__(self) -> str:
-        return f'Подписка {self.user} на {self.author}'

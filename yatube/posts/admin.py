@@ -17,7 +17,6 @@ class FollowAdmin(admin.ModelAdmin):
 class GroupAdmin(admin.ModelAdmin):
     list_display = ('pk', 'title', 'description', 'slug')
     search_fields = ('title',)
-    prepopulated_fields = {'slug': ('title',)}
 
 
 class PostAdmin(admin.ModelAdmin):

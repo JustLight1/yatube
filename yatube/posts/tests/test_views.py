@@ -209,6 +209,21 @@ class ViewsTest(TestCase):
         )
         self.assertEqual(Follow.objects.count(), follows_count + 1)
 
+    def test_unfollow(self):
+        """Проверка работы отписки от автора"""
+        follow = Follow.objects.create(
+            user=self.user,
+            author=self.second_user
+        )
+        follows_count = Follow.objects.count()
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': follow.author}
+            )
+        )
+        self.assertNotEqual(Follow.objects.count(), follows_count)
+
     def test_correct_subscribtion(self):
         """Проверка появления нового поста в ленте подписчика"""
         Follow.objects.create(user=self.user, author=self.second_user)

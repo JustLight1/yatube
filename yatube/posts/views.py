@@ -10,7 +10,7 @@ from .utils import paginator
 User = get_user_model()
 
 
-@cache_page(1, cache='default', key_prefix='index_page')
+@cache_page(20, cache='default', key_prefix='index_page')
 def index(request):
     """Главная страница."""
     posts = Post.objects.select_related('author', 'group')
@@ -115,7 +115,7 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    # Подписаться на автора
+    """Функция подписки."""
     user = request.user
     author = get_object_or_404(User, username=username)
     if request.user != author:
@@ -128,7 +128,7 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    # Дизлайк, отписка
+    """Функция отписки."""
     Follow.objects.filter(
         user=request.user,
         author=get_object_or_404(User, username=username)
