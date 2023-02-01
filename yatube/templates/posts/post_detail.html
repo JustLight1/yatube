@@ -29,7 +29,7 @@
       <img class="card-img my-2" src="{{ im.url }}">
     {% endthumbnail %}
     <p>
-      {{ post.text }}
+      {{ post.text|linebreaksbr }}
     </p>
     <div>
       {% if user.username == post.author.username %}

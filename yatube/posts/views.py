@@ -10,7 +10,7 @@ from .utils import paginator
 User = get_user_model()
 
 
-@cache_page(20, cache='default', key_prefix='index_page')
+@cache_page(1, cache='default', key_prefix='index_page')
 def index(request):
     """Главная страница."""
     posts = Post.objects.select_related('author', 'group')
