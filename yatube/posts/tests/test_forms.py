@@ -8,6 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
+
 from ..forms import PostForm
 from ..models import Comment, Group, Post
 
@@ -126,7 +127,42 @@ class PostFormTests(TestCase):
         ))
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
-
-# Для чего нам нужно делать проверку того что пользователь отправит именно
-# картинку? джанго ведь это сам проверяет и в случае если пользователь
-# отправит не картинку, пользователю выведется соответствующее сообщение.
+    def test_image_error(self):
+        """
+        Тест на случай если в форму загрузят не картинку и пользователь
+        получет сообщение об ошибке.
+        """
+        posts_count = Post.objects.count()
+        small_gif = b'This is a text file'
+        uploaded = SimpleUploadedFile(
+            name='small.txt',
+            content=small_gif,
+            content_type='text/plain'
+        )
+        form_data = {
+            'text': 'Тестовый текст',
+            'group': self.group.id,
+            'image': uploaded,
+            }
+        response = self.authorized_client.post(
+            reverse('posts:post_create'),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Post.objects.count(), posts_count)
+        self.assertFormError(
+            response,
+            'form',
+            'image',
+            'Загрузите правильное изображение. Файл, который вы загрузили, '
+            'поврежден или не является изображением.'
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+    
+    # капец, целый день с этим тестом бился и не понимал почему он не работает 
+    # и в итоге ошибка была настолько очевидная что я просто не смог понять того
+    # что пишет программа в терминал... а ошибка была в том что в assertFormError
+    # в 'error=' я передавал свой текст, а оказывается нужно было просто передать
+    # текст который мне в терминале постоянно высвечивался... Вообще странно что 
+    # я не могу передать свой текст( но зато я стал лучше разбираться в тестах 
+    # а то они у меня тяжело пошли(
