@@ -8,7 +8,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-
 from ..forms import PostForm
 from ..models import Comment, Group, Post
 
@@ -137,13 +136,13 @@ class PostFormTests(TestCase):
         uploaded = SimpleUploadedFile(
             name='small.txt',
             content=small_gif,
-            content_type='text/plain'
+            content_type='text/txt'
         )
         form_data = {
             'text': 'Тестовый текст',
             'group': self.group.id,
             'image': uploaded,
-            }
+        }
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
@@ -158,11 +157,11 @@ class PostFormTests(TestCase):
             'поврежден или не является изображением.'
         )
         self.assertEqual(response.status_code, HTTPStatus.OK)
-    
-    # капец, целый день с этим тестом бился и не понимал почему он не работает 
-    # и в итоге ошибка была настолько очевидная что я просто не смог понять того
-    # что пишет программа в терминал... а ошибка была в том что в assertFormError
-    # в 'error=' я передавал свой текст, а оказывается нужно было просто передать
-    # текст который мне в терминале постоянно высвечивался... Вообще странно что 
-    # я не могу передать свой текст( но зато я стал лучше разбираться в тестах 
-    # а то они у меня тяжело пошли(
+
+    # капец, целый день с этим тестом бился и не понимал почему он не работает
+    # и в итоге ошибка была настолько очевидная что я просто не смог понять
+    # того что пишет программа в терминал... а ошибка была в том что в
+    # assertFormError в 'error=' я передавал свой текст, а оказывается нужно
+    # было просто передать текст который мне в терминале постоянно
+    # высвечивался... Вообще странно что  я не могу передать свой текст( но
+    # зато я стал лучше разбираться в тестах  а то они у меня тяжело пошли(
